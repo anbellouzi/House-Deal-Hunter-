@@ -10,13 +10,17 @@ from pathlib import Path
 
 import dj_database_url
 from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 # -- Core ---------------------------------------------------------------------
-SECRET_KEY = os.environ.get("SECRET_KEY", "dev-insecure-key-change-in-production")
 DEBUG = os.environ.get("DEBUG", "False").lower() in ("true", "1", "yes")
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if not SECRET_KEY and not DEBUG:
+    raise ImproperlyConfigured("SECRET_KEY must be set when DEBUG=False")
+SECRET_KEY = SECRET_KEY or "dev-insecure-key-change-in-production"
 
 # Railway injects the public domain here. Keep localhost for dev.
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".railway.app"]
