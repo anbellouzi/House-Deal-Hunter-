@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ auction.property.address|default:auction.source_id }} — Auction Detail</title>
+<style>
+  :root{--bg:#0D1117;--surface:#161B22;--surface2:#21262D;--border:#30363D;
+        --text:#E6EDF3;--muted:#8B949E;--green:#00C27B;--gold:#FFB800;--red:#FF6B6B}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px}
+  a{color:var(--green);text-decoration:none}
+  .wrap{max-width:1100px;margin:0 auto;padding:24px}
+  h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
+  h2{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;
+     color:var(--muted);margin:24px 0 10px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+  .kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+  .kv .k{color:var(--muted)} .kv .v{font-weight:700}
+  .big{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+  .big .l{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .big .n{font-size:22px;font-weight:800;margin-top:4px}
+  .gold{color:var(--gold)}.green{color:var(--green)}.red{color:var(--red)}.muted{color:var(--muted)}
+  .b-gold{border-color:var(--gold)} .b-green{border-color:var(--green)}
+  table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:10px;overflow:hidden}
+  th{background:var(--surface2);padding:8px 12px;text-align:left;font-size:10px;
+     text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+  td{padding:8px 12px;border-top:1px solid var(--border);font-size:13px}
+  .warn{background:#2B0A0A;border:1px solid var(--red);border-radius:8px;padding:12px;
+        color:var(--red);font-size:13px;margin-bottom:10px}
+  .note{background:#2B2000;border:1px solid var(--gold);border-radius:8px;padding:10px 12px;
+        color:var(--gold);font-size:12px;margin:12px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a href="/">&larr; Back to dashboard</a>
+  <h1 style="margin-top:10px">{{ auction.property.address|default:"Unknown address" }}</h1>
+  <div class="muted" style="font-size:13px;margin-top:3px">
+    {{ auction.property.city }}, {{ auction.property.state }} {{ auction.property.zip_code }}
+    · {{ auction.get_auction_type_display }} · ID {{ auction.source_id }}
+    · <a href="{{ auction.source_url }}" target="_blank" rel="noopener">Source listing ↗</a>
+  </div>
+
+  <div class="note">
+    MODEL ESTIMATE — NOT GUARANTEED. All scores, values, and maximum bids are
+    calculated estimates. Verify title, liens, condition, and auction terms before bidding.
+  </div>
+
+  <h2>Key Numbers</h2>
+  <div class="grid">
+    <div class="big b-gold">
+      <div class="l">Minimum Bid</div>
+      <div class="n gold">{% if auction.minimum_bid %}${{ auction.minimum_bid|floatformat:0 }}{% else %}Unknown{% endif %}</div>
+    </div>
+    <div class="big">
+      <div class="l">Current Bid</div>
+      <div class="n">{% if auction.current_bid %}${{ auction.current_bid|floatformat:0 }}{% else %}—{% endif %}</div>
+    </div>
+    <div class="big b-gold">
+      <div class="l">Deposit / Hand Money</div>
+      <div class="n gold">{% if auction.deposit_requirement %}${{ auction.deposit_requirement|floatformat:0 }}{% else %}Unknown{% endif %}</div>
+    </div>
+    <div class="big b-green">
+      <div class="l">Recommended Max Bid</div>
+      <div class="n green">{% if financial.max_bid_recommended %}${{ financial.max_bid_recommended|floatformat:0 }}{% else %}Insufficient data{% endif %}</div>
+    </div>
+  </div>
+
+  <h2>Scores</h2>
+  <div class="grid">
+    <div class="big"><div class="l">Deal Score</div>
+      <div class="n">{{ financial.deal_score|default:"—" }}<span class="muted" style="font-size:13px">/100</span></div></div>
+    <div class="big"><div class="l">Low Competition</div>
+      <div class="n">{{ financial.low_competition_score|default:"—" }}<span class="muted" style="font-size:13px">/100</span></div></div>
+    <div class="big"><div class="l">Risk</div>
+      <div class="n">{{ financial.risk_score|default:"—" }}<span class="muted" style="font-size:13px">/100</span></div></div>
+    <div class="big"><div class="l">Min-Bid Win Prob.</div>
+      <div class="n">{% if financial.min_bid_win_probability %}{{ financial.min_bid_win_probability }}%{% else %}Insufficient data{% endif %}</div></div>
+  </div>
+
+  <h2>Auction Terms</h2>
+  <div class="card">
+    <div class="kv"><span class="k">Status</span><span class="v">{{ auction.get_auction_status_display }}</span></div>
+    <div class="kv"><span class="k">Auction date</span><span class="v">{{ auction.auction_date|default:"Unknown" }}</span></div>
+    <div class="kv"><span class="k">Closes</span><span class="v">{{ auction.auction_close_time|default:"Unknown" }}</span></div>
+    <div class="kv"><span class="k">Buyer's premium</span><span class="v">{% if auction.buyer_premium_pct %}{{ auction.buyer_premium_pct }}%{% else %}UNKNOWN — VERIFY{% endif %}</span></div>
+    <div class="kv"><span class="k">Bid increment</span><span class="v">{% if auction.bid_increment %}${{ auction.bid_increment|floatformat:0 }}{% else %}Unknown{% endif %}</span></div>
+    <div class="kv"><span class="k">Overtime</span><span class="v">{% if auction.overtime_minutes %}{{ auction.overtime_minutes }} min{% else %}Unknown{% endif %}</span></div>
+    <div class="kv"><span class="k">Reserve</span><span class="v">{{ auction.get_reserve_status_display }}</span></div>
+    <div class="kv"><span class="k">Payment deadline</span><span class="v">{% if auction.payment_deadline_days %}{{ auction.payment_deadline_days }} days{% else %}Unknown{% endif %}</span></div>
+    <div class="kv"><span class="k">Plaintiff</span><span class="v">{{ auction.plaintiff|default:"Unknown" }}</span></div>
+    <div class="kv"><span class="k">Defendant</span><span class="v">{{ auction.defendant|default:"Unknown" }}</span></div>
+  </div>
+
+  <h2>Risk Flags</h2>
+  <div class="card">
+    {% if auction.risk %}
+      {% if auction.risk.federal_lien_suspected %}<div class="warn">⚠️ Federal lien suspected — may SURVIVE the sheriff sale. Consult a title attorney.</div>{% endif %}
+      {% if auction.risk.irs_lien_suspected %}<div class="warn">⚠️ IRS lien suspected — 120-day federal redemption right may apply.</div>{% endif %}
+      {% if auction.risk.title_issues_noted %}<div class="warn">⚠️ Title issues noted.</div>{% endif %}
+      <div class="kv"><span class="k">Interior condition</span><span class="v">{% if auction.risk.interior_unknown %}UNKNOWN — uninspected{% else %}Inspected{% endif %}</span></div>
+      <div class="kv"><span class="k">Occupancy</span><span class="v">{% if auction.risk.occupancy_unknown %}UNKNOWN{% else %}Known{% endif %}</span></div>
+      <div class="kv"><span class="k">Municipal lien</span><span class="v">{{ auction.risk.municipal_lien_suspected|yesno:"Suspected,Not flagged" }}</span></div>
+      <div class="kv"><span class="k">Plaintiff can withdraw</span><span class="v">{{ auction.risk.plaintiff_can_withdraw|yesno:"Yes,No" }}</span></div>
+      <div class="kv"><span class="k">Financing available</span><span class="v">{{ auction.risk.financing_unlikely|yesno:"Unlikely — cash only,Possible" }}</span></div>
+    {% else %}
+      <span class="muted">No risk record yet.</span>
+    {% endif %}
+  </div>
+
+  <h2>Change History ({{ events|length }} events)</h2>
+  <table>
+    <thead><tr><th>When</th><th>Event</th><th>From</th><th>To</th></tr></thead>
+    <tbody>
+      {% for e in events %}
+      <tr>
+        <td class="muted">{{ e.occurred_at|date:"M j, Y H:i" }}</td>
+        <td>{{ e.get_event_type_display }}</td>
+        <td class="muted">{{ e.previous_value|default:"—" }}</td>
+        <td>{{ e.new_value|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="muted">No events recorded.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Observed Bids ({{ bids|length }})</h2>
+  <table>
+    <thead><tr><th>Observed</th><th>Bid amount</th><th>Bid count</th></tr></thead>
+    <tbody>
+      {% for b in bids %}
+      <tr><td class="muted">{{ b.observed_at|date:"M j, Y H:i" }}</td>
+          <td class="money">${{ b.bid_amount|floatformat:0 }}</td>
+          <td>{{ b.bid_count_snapshot }}</td></tr>
+      {% empty %}
+      <tr><td colspan="3" class="muted">No bid observations recorded.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Comparable Sales ({{ comps|length }})</h2>
+  <table>
+    <thead><tr><th>Address</th><th>Sold</th><th>Price</th><th>Sqft</th><th>$/sqft</th></tr></thead>
+    <tbody>
+      {% for c in comps %}
+      <tr><td>{{ c.comp_address }}</td>
+          <td class="muted">{{ c.sold_date }}</td>
+          <td class="money">${{ c.sold_price|floatformat:0 }}</td>
+          <td>{{ c.square_feet|default:"—" }}</td>
+          <td>{% if c.price_per_sqft %}${{ c.price_per_sqft|floatformat:0 }}{% else %}—{% endif %}</td></tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted">No comparable sales collected yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+</body>
+</html>

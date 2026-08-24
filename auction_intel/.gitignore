@@ -1,0 +1,45 @@
+# Environment / secrets
+.env
+.env.local
+*.pem
+venv/
+.venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+staticfiles/
+media/
+local_settings.py
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Crawler artifacts
+downloads/
+*.pdf
+!docs/**/*.pdf
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

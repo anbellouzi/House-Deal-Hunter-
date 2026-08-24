@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auction Intelligence — Dashboard</title>
+<style>
+  :root{
+    --bg:#0D1117; --surface:#161B22; --surface2:#21262D; --border:#30363D;
+    --text:#E6EDF3; --muted:#8B949E; --green:#00C27B; --gold:#FFB800; --red:#FF6B6B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px}
+  a{color:inherit;text-decoration:none}
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:18px 24px}
+  .wrap{max-width:1400px;margin:0 auto;padding:0 24px}
+  h1{font-size:22px;font-weight:800;letter-spacing:-.5px}
+  .sub{font-size:12px;color:var(--muted);margin-top:3px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:20px 0}
+  .stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+  .stat .n{font-size:24px;font-weight:800}
+  .stat .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:700}
+  section{margin:28px 0}
+  .sec-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .sec-head h2{font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+  .badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--muted)}
+  table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:10px;overflow:hidden}
+  th{background:var(--surface2);padding:9px 12px;text-align:left;font-size:10px;font-weight:700;
+     color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+  td{padding:10px 12px;border-top:1px solid var(--border);white-space:nowrap}
+  tr:hover td{background:var(--surface2)}
+  .addr{font-weight:700}
+  .meta{font-size:11px;color:var(--muted)}
+  .money{font-weight:700}
+  .gold{color:var(--gold)} .green{color:var(--green)} .red{color:var(--red)} .muted{color:var(--muted)}
+  .pill{display:inline-block;font-size:10px;font-weight:800;padding:3px 8px;border-radius:5px}
+  .pill.a{background:#0D2B1A;color:var(--green);border:1px solid var(--green)}
+  .pill.b{background:#2B2000;color:var(--gold);border:1px solid var(--gold)}
+  .pill.c{background:#2B0A0A;color:var(--red);border:1px solid var(--red)}
+  .empty{padding:24px;text-align:center;color:var(--muted);background:var(--surface);
+         border:1px dashed var(--border);border-radius:10px;font-size:13px}
+  .alerts{display:flex;flex-direction:column;gap:6px}
+  .alert{background:var(--surface);border-left:3px solid var(--gold);border-radius:6px;padding:8px 12px;font-size:12px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap" style="padding:0">
+    <h1>🔨 Auction Intelligence</h1>
+    <div class="sub">Pennsylvania sheriff sales &amp; foreclosure auctions · Low-competition opportunity finder</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="stats">
+    <div class="stat"><div class="n">{{ stats.total_auctions }}</div><div class="l">Total Auctions</div></div>
+    <div class="stat"><div class="n green">{{ stats.active }}</div><div class="l">Active / Upcoming</div></div>
+    <div class="stat"><div class="n gold">{{ stats.min_bid_ops }}</div><div class="l">Min-Bid Opportunities</div></div>
+    <div class="stat"><div class="n">{{ stats.alerts_unread }}</div><div class="l">Unread Alerts</div></div>
+  </div>
+
+  {% if alerts %}
+  <section>
+    <div class="sec-head"><h2>🔔 Active Alerts</h2></div>
+    <div class="alerts">
+      {% for a in alerts %}
+        <div class="alert"><strong>{{ a.get_alert_type_display }}</strong> — {{ a.message }}
+          <a href="{% url 'auction-detail' a.auction.id %}" class="muted"> · view</a></div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% include "dashboard/_table.html" with rows=min_bid_ops title="🔥 Minimum-Bid Opportunities" note="min bid ≤40% of value · low competition · manageable risk" %}
+  {% include "dashboard/_table.html" with rows=top_deals title="🏆 Top Deals" note="ranked by deal score" %}
+  {% include "dashboard/_table.html" with rows=low_comp title="🎯 Low Competition" note="score ≥70" %}
+  {% include "dashboard/_table.html" with rows=closing_soon title="⏰ Closing Soon" note="next 72 hours" %}
+  {% include "dashboard/_table.html" with rows=one_bidder title="👤 One-Bidder Auctions" note="≤1 bidder or bid" %}
+  {% include "dashboard/_table.html" with rows=new_auctions title="📢 New Auctions" note="discovered in last 7 days" %}
+
+  <section>
+    <div class="sec-head"><h2>⚠️ Withdrawn / Cancelled</h2></div>
+    {% if withdrawn %}
+    <table>
+      <thead><tr><th>Address</th><th>Source ID</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody>
+      {% for a in withdrawn %}
+        <tr>
+          <td><a href="{% url 'auction-detail' a.id %}" class="addr">{{ a.property.address|default:"Unknown" }}</a></td>
+          <td class="meta">{{ a.source_id }}</td>
+          <td><span class="pill c">{{ a.get_auction_status_display }}</span></td>
+          <td class="meta">{{ a.auction_date|default:"—" }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="empty">None.</div>{% endif %}
+  </section>
+
+</div>
+</body>
+</html>

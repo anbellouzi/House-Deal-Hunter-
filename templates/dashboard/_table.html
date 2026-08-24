@@ -1,0 +1,68 @@
+<section>
+  <div class="sec-head">
+    <h2>{{ title }}</h2>
+    <span class="badge">{{ note }}</span>
+    <span class="badge">{{ rows|length }}</span>
+  </div>
+
+  {% if rows %}
+  <table>
+    <thead>
+      <tr>
+        <th>Address</th>
+        <th>County / ZIP</th>
+        <th>Auction Date</th>
+        <th class="gold">Min Bid</th>
+        <th>Current Bid</th>
+        <th>Bids</th>
+        <th>Low Comp</th>
+        <th>Est. Value</th>
+        <th>Est. Rent</th>
+        <th class="green">Max Bid</th>
+        <th>Deal</th>
+        <th>Risk</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in rows %}
+      <tr>
+        <td>
+          <a href="{% url 'auction-detail' a.id %}" class="addr">
+            {{ a.property.address|default:"Unknown address" }}
+          </a>
+          <div class="meta">{{ a.property.city|default:"" }} · {{ a.source_id }}</div>
+        </td>
+        <td class="meta">{{ a.property.county|default:"—" }}<br>{{ a.property.zip_code|default:"" }}</td>
+        <td class="meta">{{ a.auction_date|default:"—" }}</td>
+        <td class="money gold">{% if a.minimum_bid %}${{ a.minimum_bid|floatformat:0 }}{% else %}<span class="muted">Unknown</span>{% endif %}</td>
+        <td class="money">{% if a.current_bid %}${{ a.current_bid|floatformat:0 }}{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td>{{ a.bid_count }}{% if a.bidder_count %} <span class="meta">({{ a.bidder_count }}b)</span>{% endif %}</td>
+        <td>
+          {% if a.low_comp %}
+            <span class="pill {% if a.low_comp >= 80 %}a{% elif a.low_comp >= 60 %}b{% else %}c{% endif %}">{{ a.low_comp }}</span>
+          {% else %}<span class="muted">—</span>{% endif %}
+        </td>
+        <td class="money">{% if a.est_value %}${{ a.est_value|floatformat:0 }}{% else %}<span class="muted">Unknown</span>{% endif %}</td>
+        <td class="money">{% if a.est_rent %}${{ a.est_rent|floatformat:0 }}{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td class="money green">{% if a.max_bid %}${{ a.max_bid|floatformat:0 }}{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td>
+          {% if a.deal_score %}
+            <span class="pill {% if a.deal_score >= 80 %}a{% elif a.deal_score >= 60 %}b{% else %}c{% endif %}">{{ a.deal_score }}</span>
+          {% else %}<span class="muted">—</span>{% endif %}
+        </td>
+        <td>
+          {% if a.risk %}
+            <span class="pill {% if a.risk <= 40 %}a{% elif a.risk <= 60 %}b{% else %}c{% endif %}">{{ a.risk }}</span>
+          {% else %}<span class="muted">—</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">
+    No auctions match yet. Run <code>python manage.py crawl --source=all</code> to populate,
+    then <code>python manage.py analyze</code> to score them.
+  </div>
+  {% endif %}
+</section>

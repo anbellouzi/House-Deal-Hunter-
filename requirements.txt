@@ -1,0 +1,27 @@
+Django==5.0.6
+djangorestframework==3.15.1
+django-filter==24.2
+psycopg2-binary==2.9.9
+requests==2.32.3
+beautifulsoup4==4.12.3
+lxml==5.2.2
+pdfplumber==0.11.1
+dateparser==1.2.0
+python-dotenv==1.0.1
+
+# Production
+gunicorn==22.0.0
+whitenoise==6.6.0
+dj-database-url==2.2.0
+
+# Optional background execution — only used when USE_CELERY=True.
+# Safe to leave installed; nothing imports them in inline mode.
+celery==5.4.0
+redis==5.0.4
+django-celery-beat==2.6.0
+django-celery-results==2.5.1
+
+# Dev / test
+pytest==8.2.1
+pytest-django==4.8.0
+pytest-cov==5.0.0
